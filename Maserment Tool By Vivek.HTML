@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Measurement, Rate & Secure License Calculator</title>
+  <!-- PDF Generation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #eef2f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 26px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 15px 35px rgba(30, 41, 59, 0.08);
+      position: relative;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .demo-badge {
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      color: #c2410c;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-align: center;
+      padding: 6px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #f1f5f9;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+
+    .mode-btn {
+      border: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #475569;
+      background: transparent;
+      transition: all 0.25s ease;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, #4f8ec9 0%, #3a75b0 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(58, 117, 176, 0.28);
+    }
+
+    .item-input-wrap {
+      margin-bottom: 14px;
+    }
+
+    .label-text {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+      outline: none;
+    }
+
+    .text-input:focus {
+      border-color: #3a75b0;
+    }
+
+    .inputs-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .unit-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #4f8ec9 0%, #3a75b0 100%);
+      border: 2px solid #2e5d8c;
+      border-radius: 16px;
+      padding: 8px 12px 8px 18px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(58, 117, 176, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .unit-box input {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 21px;
+      font-weight: 600;
+      width: 100%;
+      outline: none;
+      letter-spacing: 0.5px;
+    }
+
+    .unit-box input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .unit-box input::-webkit-outer-spin-button,
+    .unit-box input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .unit-box select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: rgba(255, 255, 255, 0.16);
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      border-radius: 11px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 28px 8px 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .select-wrapper::after {
+      content: '▼';
+      font-size: 9px;
+      color: #ffffff;
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+    }
+
+    .unit-box select option {
+      background-color: #ffffff;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 80px 115px 1fr;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .add-btn {
+      height: 43px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-btn:hover {
+      background: #1e293b;
+    }
+
+    .live-result {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .live-result .sub {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .live-result strong {
+      font-size: 18px;
+      color: #1d4ed8;
+    }
+
+    .live-amount {
+      text-align: right;
+    }
+
+    .live-amount strong {
+      color: #15803d;
+    }
+
+    .list-section {
+      border-top: 1.5px solid #e2e8f0;
+      padding-top: 12px;
+      margin-bottom: 16px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .list-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .list-table th {
+      text-align: left;
+      color: #64748b;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .list-table td {
+      padding: 8px 4px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .del-btn {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pdf-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Locked Overlay */
+    .lock-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(4px);
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 26px;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .lock-overlay h2 {
+      color: #dc2626;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .lock-overlay p {
+      color: #334155;
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .req-id-box {
+      background: #eff6ff;
+      border: 1.5px dashed #3b82f6;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .whatsapp-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #25D366;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 15px rgba(37, 211, 102, 0.3);
+    }
+
+    .unlock-box {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .unlock-box input {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .unlock-box button {
+      padding: 10px 18px;
+      background: #1e3a8a;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <!-- Demo Lock Screen -->
+    <div id="lockScreen" class="lock-overlay hidden">
+      <h2>🔒 Demo Limit Over!</h2>
+      <p>Aapne 3 free PDFs download kar li hain. Full access (₹99) ke liye niche button dabakar WhatsApp par apna Request ID bhejein:</p>
+      
+      <div class="req-id-box">
+        Your Request ID: <span id="displayReqId">----</span>
+      </div>
+
+      <a id="whatsappLink" href="#" target="_blank" class="whatsapp-btn">
+        📲 Send ID on WhatsApp (Vivek: 7887278035)
+      </a>
+
+      <div class="unlock-box">
+        <input type="number" id="licenseKeyInput" placeholder="Enter Unlock Password" />
+        <button onclick="verifyLicense()">Unlock</button>
+      </div>
+    </div>
+
+    <div class="title">Measurement & Estimate Calculator</div>
+    <div class="demo-badge" id="demoBadge">Demo Mode: 3 Free PDF Downloads Remaining</div>
+
+    <div class="mode-buttons">
+      <button class="mode-btn active" id="btnRft" onclick="setMode('rft')">Running Feet (RFT)</button>
+      <button class="mode-btn" id="btnSqft" onclick="setMode('sqft')">Square Feet (Sq.Ft)</button>
+    </div>
+
+    <div class="item-input-wrap">
+      <label class="label-text">Item / Work Description</label>
+      <input type="text" id="itemName" class="text-input" placeholder="e.g., Main Door Frame / Wall Tile" />
+    </div>
+
+    <div class="inputs-row">
+      <div>
+        <label class="label-text">Length</label>
+        <div class="unit-box">
+          <input type="number" id="lenInput" value="4.5" placeholder="0" step="any" />
+          <div class="select-wrapper">
+            <select id="lenUnit">
+              <option value="ft" selected>FT</option>
+              <option value="mm">MM</option>
+              <option value="in">IN</option>
+              <option value="cm">CM</option>
+              <option value="m">M</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="widthContainer" class="hidden">
+        <label class="label-text">Width</label>
+        <div class="unit-box">
+          <input type="number" id="widInput" value="2" placeholder="0" step="any" />
+          <div class="select-wrapper">
+            <select id="widUnit">
+              <option value="ft" selected>FT</option>
+              <option value="mm">MM</option>
+              <option value="in">IN</option>
+              <option value="cm">CM</option>
+              <option value="m">M</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div>
+        <label class="label-text">Qty</label>
+        <input type="number" id="qtyInput" class="text-input" value="1" min="1" />
+      </div>
+      <div>
+        <label class="label-text" id="rateLabel">Rate (₹/RFT)</label>
+        <input type="number" id="rateInput" class="text-input" value="100" placeholder="0" step="any" />
+      </div>
+      <button class="add-btn" onclick="addEntry()">+ Add Item</button>
+    </div>
+
+    <div class="live-result">
+      <div>
+        <div class="sub" id="liveLabel">Running Feet:</div>
+        <strong id="liveValue">4.50 RFT</strong>
+      </div>
+      <div class="live-amount">
+        <div class="sub">Total Amount:</div>
+        <strong id="liveAmount">₹ 450.00</strong>
+      </div>
+    </div>
+
+    <div class="list-section">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Size</th>
+            <th>Total</th>
+            <th>Rate</th>
+            <th>Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="entriesBody">
+          <tr>
+            <td colspan="6" style="text-align:center; color:#94a3b8; font-weight:500;">No items added yet. Click "+ Add Item"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="pdf-btn" onclick="downloadProperPDF()">Download Proper PDF Report</button>
+  </div>
+
+  <!-- Hidden Printable PDF Template -->
+  <div style="display:none;">
+    <div id="pdfReportTemplate" style="padding: 32px; font-family: Arial, sans-serif; color: #1e293b;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #3a75b0; padding-bottom: 14px; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 22px; color: #1e3a8a; margin: 0;">MEASUREMENT & ESTIMATE SHEET</h1>
+          <p style="font-size: 12px; color: #64748b; margin-top: 4px;">Running Feet, Square Feet & Cost Calculation</p>
+        </div>
+        <div style="text-align: right; font-size: 12px; color: #475569;">
+          <strong>Date:</strong> <span id="pdfDate"></span>
+        </div>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 12px;">
+        <thead>
+          <tr style="background-color: #3a75b0; color: #ffffff;">
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: left;">#</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: left;">Item Description</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: left;">Dimensions</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: center;">Qty</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: right;">Total Area/Len</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: right;">Rate (₹)</th>
+            <th style="padding: 9px 8px; border: 1px solid #cbd5e1; text-align: right;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="pdfTableBody"></tbody>
+      </table>
+
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 35px;">
+        <div style="width: 300px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px;">
+            <span>Total Running Feet:</span>
+            <strong id="pdfTotalRft" style="color: #1e3a8a;">0.00 RFT</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+            <span>Total Square Feet:</span>
+            <strong id="pdfTotalSqft" style="color: #1e3a8a;">0.00 Sq.Ft</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 15px; border-top: 1.5px solid #cbd5e1; padding-top: 8px; color: #15803d;">
+            <strong>Grand Total Amount:</strong>
+            <strong id="pdfGrandTotal">₹ 0.00</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1.5px solid #93c5fd; border-radius: 12px; padding: 16px 20px; margin-top: 20px;">
+        <div style="font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 6px;">
+          💡 Apne Business ke liye aisi Smart App ya Website banwayein sirf ₹99 mein!
+        </div>
+        <p style="font-size: 12px; color: #334155; line-height: 1.5; margin-bottom: 10px;">
+          Yeh professional measurement sheet aapke business ko aage badhane mein madad karegi. Aaj hi aisi custom app ya website sirf <strong>₹99</strong> mein banwayein.
+        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 14px; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 13px;">
+          <span style="color: #1e293b;"><strong>Developer Contact:</strong> Vivek Vishwakarma</span>
+          <span style="color: #1d4ed8; font-weight: bold;">📞 7887278035</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const toMeters = { m: 1, cm: 0.01, mm: 0.001, in: 0.0254, ft: 0.3048 };
+    let currentMode = 'rft';
+    let entries = [];
+
+    // --- UNIQUE DEVICE ID & WHATSAPP LICENSE SYSTEM ---
+    const OWNER_WHATSAPP = "917887278035";
+    
+    // Har phone ke liye ek unique 4-digit Request ID generate aur save karein
+    let deviceReqId = parseInt(localStorage.getItem('device_req_id'));
+    if (!deviceReqId) {
+      deviceReqId = Math.floor(1000 + Math.random() * 9000); // 1000 se 9999 ke beech
+      localStorage.setItem('device_req_id', deviceReqId);
+    }
+
+    // Secret Formula: (Request ID * 2) + 99
+    const EXPECTED_PASSWORD = (deviceReqId * 2) + 99;
+
+    let isUnlocked = localStorage.getItem('app_unlocked') === 'true';
+    let demoCount = parseInt(localStorage.getItem('demo_downloads')) || 0;
+    const maxDemo = 3;
+
+    function setupLockScreen() {
+      document.getElementById('displayReqId').textContent = deviceReqId;
+      const msg = encodeURIComponent(`Hello Vivek ji, mera Measurement App ka 3 PDF demo poora ho gaya hai.\nMera Request ID: *${deviceReqId}*\nKripya ₹99 wala Unlock Password bhejein.`);
+      document.getElementById('whatsappLink').href = `https://wa.me/${OWNER_WHATSAPP}?text=${msg}`;
+    }
+
+    function checkDemoStatus() {
+      if (isUnlocked) {
+        document.getElementById('demoBadge').textContent = `Full Version Activated (ID: ${deviceReqId})`;
+        document.getElementById('lockScreen').classList.add('hidden');
+        return;
+      }
+
+      const remaining = maxDemo - demoCount;
+      const badge = document.getElementById('demoBadge');
+      if (remaining > 0) {
+        badge.textContent = `Demo Mode: ${remaining} Free PDF Download(s) Remaining`;
+      } else {
+        badge.textContent = `Demo Expired!`;
+        setupLockScreen();
+        document.getElementById('lockScreen').classList.remove('hidden');
+      }
+    }
+
+    function verifyLicense() {
+      const inputVal = parseInt(document.getElementById('licenseKeyInput').value.trim());
+      if (inputVal === EXPECTED_PASSWORD) {
+        localStorage.setItem('app_unlocked', 'true');
+        isUnlocked = true;
+        alert("Badhai ho! App Successfully Unlock ho gayi hai.");
+        checkDemoStatus();
+      } else {
+        alert("Galat Password! Kripya upar diye gaye WhatsApp button se sahi password mangwayein.");
+      }
+    }
+
+    checkDemoStatus();
+    // -------------------------------------------------
+
+    function bindUnitConverter(inputId, selectId) {
+      const inp = document.getElementById(inputId);
+      const sel = document.getElementById(selectId);
+      let prevUnit = sel.value;
+
+      sel.addEventListener('change', function () {
+        const newUnit = this.value;
+        const val = parseFloat(inp.value);
+        if (!isNaN(val)) {
+          const meters = val * toMeters[prevUnit];
+          inp.value = parseFloat((meters / toMeters[newUnit]).toFixed(4));
+        }
+        prevUnit = newUnit;
+        updateLivePreview();
+      });
+
+      inp.addEventListener('input', updateLivePreview);
+    }
+
+    bindUnitConverter('lenInput', 'lenUnit');
+    bindUnitConverter('widInput', 'widUnit');
+    document.getElementById('qtyInput').addEventListener('input', updateLivePreview);
+    document.getElementById('rateInput').addEventListener('input', updateLivePreview);
+
+    function setMode(mode) {
+      currentMode = mode;
+      const btnRft = document.getElementById('btnRft');
+      const btnSqft = document.getElementById('btnSqft');
+      const widthContainer = document.getElementById('widthContainer');
+      const rateLabel = document.getElementById('rateLabel');
+
+      if (mode === 'rft') {
+        btnRft.classList.add('active');
+        btnSqft.classList.remove('active');
+        widthContainer.classList.add('hidden');
+        rateLabel.textContent = 'Rate (₹/RFT)';
+      } else {
+        btnSqft.classList.add('active');
+        btnRft.classList.remove('active');
+        widthContainer.classList.remove('hidden');
+        rateLabel.textContent = 'Rate (₹/Sq.Ft)';
+      }
+      updateLivePreview();
+    }
+
+    function getCurrentCalculation() {
+      const lenVal = parseFloat(document.getElementById('lenInput').value) || 0;
+      const lenUnit = document.getElementById('lenUnit').value;
+      const lenFeet = (lenVal * toMeters[lenUnit]) / toMeters.ft;
+
+      const widVal = parseFloat(document.getElementById('widInput').value) || 0;
+      const widUnit = document.getElementById('widUnit').value;
+      const widFeet = (widVal * toMeters[widUnit]) / toMeters.ft;
+
+      const qty = parseFloat(document.getElementById('qtyInput').value) || 1;
+      const rate = parseFloat(document.getElementById('rateInput').value) || 0;
+
+      if (currentMode === 'rft') {
+        const total = lenFeet * qty;
+        return { mode: 'Running Feet', dimText: `${lenVal} ${lenUnit.toUpperCase()}`, qty, total, rate, amount: total * rate, unitLabel: 'RFT' };
+      } else {
+        const total = lenFeet * widFeet * qty;
+        return { mode: 'Square Feet', dimText: `${lenVal} ${lenUnit.toUpperCase()} × ${widVal} ${widUnit.toUpperCase()}`, qty, total, rate, amount: total * rate, unitLabel: 'Sq.Ft' };
+      }
+    }
+
+    function updateLivePreview() {
+      const calc = getCurrentCalculation();
+      document.getElementById('liveLabel').textContent = `${calc.mode}:`;
+      document.getElementById('liveValue').textContent = `${calc.total.toFixed(2)} ${calc.unitLabel}`;
+      document.getElementById('liveAmount').textContent = `₹ ${calc.amount.toFixed(2)}`;
+    }
+
+    function addEntry() {
+      const calc = getCurrentCalculation();
+      if (calc.total <= 0) return;
+
+      const nameInput = document.getElementById('itemName');
+      const name = nameInput.value.trim() || `Item #${entries.length + 1}`;
+
+      entries.push({
+        name,
+        dimText: calc.dimText,
+        qty: calc.qty,
+        total: calc.total,
+        rate: calc.rate,
+        amount: calc.amount,
+        unitLabel: calc.unitLabel
+      });
+
+      nameInput.value = '';
+      renderTable();
+    }
+
+    function deleteEntry(index) {
+      entries.splice(index, 1);
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('entriesBody');
+      if (entries.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; font-weight:500;">No items added yet. Click "+ Add Item"</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = entries.map((item, idx) => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.dimText} (${item.qty})</td>
+          <td style="color:#1d4ed8;">${item.total.toFixed(2)} ${item.unitLabel}</td>
+          <td>₹${item.rate}</td>
+          <td style="color:#15803d;">₹${item.amount.toFixed(2)}</td>
+          <td style="text-align:right;"><button class="del-btn" onclick="deleteEntry(${idx})">X</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function downloadProperPDF() {
+      if (!isUnlocked && demoCount >= maxDemo) {
+        setupLockScreen();
+        document.getElementById('lockScreen').classList.remove('hidden');
+        return;
+      }
+
+      let exportData = [...entries];
+      if (exportData.length === 0) {
+        const current = getCurrentCalculation();
+        const name = document.getElementById('itemName').value.trim() || 'Measurement Entry';
+        exportData.push({
+          name,
+          dimText: current.dimText,
+          qty: current.qty,
+          total: current.total,
+          rate: current.rate,
+          amount: current.amount,
+          unitLabel: current.unitLabel
+        });
+      }
+
+      let sumRft = 0, sumSqft = 0, grandTotal = 0;
+      const pdfBody = document.getElementById('pdfTableBody');
+      pdfBody.innerHTML = exportData.map((item, i) => {
+        if (item.unitLabel === 'RFT') sumRft += item.total;
+        if (item.unitLabel === 'Sq.Ft') sumSqft += item.total;
+        grandTotal += item.amount;
+
+        return `
+          <tr style="background-color: ${i % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+            <td style="padding: 8px; border: 1px solid #cbd5e1;">${i + 1}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: bold;">${item.name}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1;">${item.dimText}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">${item.qty}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold;">${item.total.toFixed(2)} ${item.unitLabel}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right;">₹ ${item.rate.toFixed(2)}</td>
+            <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: #15803d;">₹ ${item.amount.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('pdfDate').textContent = new Date().toLocaleDateString('en-IN');
+      document.getElementById('pdfTotalRft').textContent = `${sumRft.toFixed(2)} RFT`;
+      document.getElementById('pdfTotalSqft').textContent = `${sumSqft.toFixed(2)} Sq.Ft`;
+      document.getElementById('pdfGrandTotal').textContent = `₹ ${grandTotal.toFixed(2)}`;
+
+      const element = document.getElementById('pdfReportTemplate');
+      const opt = {
+        margin: 10,
+        filename: 'Measurement_Estimate_Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        if (!isUnlocked) {
+          demoCount++;
+          localStorage.setItem('demo_downloads', demoCount);
+          checkDemoStatus();
+        }
+      });
+    }
+
+    updateLivePreview();
+  </script>
+
+</body>
+</html>
